@@ -1,0 +1,24 @@
+{
+  "name": "tweeter-shared",
+  "private": true,
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run compile",
+    "preview": "vite preview",
+    "compile": "npm run clean && tsc",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.5.2"
+  },
+  "dependencies": {
+    "@types/uuid": "^9.0.8",
+    "date-fns": "^3.3.1",
+    "uuid": "^9.0.1",
+    "vite-plugin-dts": "^3.7.3"
+  }
+}

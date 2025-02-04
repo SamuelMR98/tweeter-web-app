@@ -1,0 +1,14 @@
+{
+  "name": "tweeter",
+  "version": "1.0.0",
+  "workspaces": [
+    "tweeter-shared",
+    "tweeter-web"
+  ],
+  "author": "JWilkerson",
+  "license": "ISC",
+  "dependencies": {
+    "rimraf": "^5.0.5",
+    "vite-plugin-dts": "^3.7.3"
+  }
+}
