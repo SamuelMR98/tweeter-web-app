@@ -4,6 +4,7 @@ import { AuthToken, FakeData, Status, User } from "tweeter-shared";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useToastListener from "../toaster/ToastListenerHook";
 import StatusItem from "../statusItem/StatusItem";
+import useUserNavigation from "../hooks/userNavigationHook";
 
 export const PAGE_SIZE = 10;
 
@@ -25,7 +26,8 @@ const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ loadMoreItemsFu
     const [lastItem, setLastItem] = useState<Status | null>(null);
     const [changedDisplayedUser, setChangedDisplayedUser] = useState(true);
 
-    const { displayedUser, setDisplayedUser, currentUser, authToken } = useContext(UserInfoContext);
+    const { navigateToUser } = useUserNavigation();
+    const { displayedUser, authToken } = useContext(UserInfoContext);
 
     useEffect(() => {
         reset();
@@ -69,27 +71,6 @@ const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ loadMoreItemsFu
         }
     };
 
-    const navigateToUser = async (event: React.MouseEvent, alias: string): Promise<void> => {
-        event.preventDefault();
-
-        try {
-            const user = await getUser(authToken!, alias);
-
-            if (!!user) {
-                if (currentUser!.equals(user)) {
-                    setDisplayedUser(currentUser!);
-                } else {
-                    setDisplayedUser(user);
-                }
-            }
-        } catch (error) {
-            displayErrorMessage(`Failed to get user because of exception: ${error}`);
-        }
-    };
-
-    const getUser = async (authToken: AuthToken, alias: string): Promise<User | null> => {
-        return FakeData.instance.findUserByAlias(alias);
-    };
 
     return (
         <div className="container px-0 overflow-visible vh-100">
