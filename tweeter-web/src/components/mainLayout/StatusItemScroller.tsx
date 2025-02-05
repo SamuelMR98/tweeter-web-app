@@ -5,6 +5,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import useToastListener from "../toaster/ToastListenerHook";
 import StatusItem from "../statusItem/StatusItem";
 import useUserNavigation from "../hooks/userNavigationHook";
+import useUserInfo from "../hooks/useUserInfo";
 
 export const PAGE_SIZE = 10;
 
@@ -27,7 +28,7 @@ const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ loadMoreItemsFu
     const [changedDisplayedUser, setChangedDisplayedUser] = useState(true);
 
     const { navigateToUser } = useUserNavigation();
-    const { displayedUser, authToken } = useContext(UserInfoContext);
+    const { displayedUser, authToken } = useUserInfo();
 
     useEffect(() => {
         reset();

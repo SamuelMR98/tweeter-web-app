@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import UserItem from "../userItem/UserItem";
 import useToastListener from "../toaster/ToastListenerHook";
+import useUserInfo from "../hooks/useUserInfo";
 
 export const PAGE_SIZE = 10;
 
@@ -29,7 +30,7 @@ const UserItemScroller = (props: Props) => {
   const addItems = (newItems: User[]) =>
     setNewItems(newItems);
 
-  const { displayedUser, authToken } = useContext(UserInfoContext);
+  const { displayedUser, authToken } = useUserInfo();
 
   // Initialize the component whenever the displayed user changes
   useEffect(() => {
