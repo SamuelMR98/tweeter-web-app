@@ -6,13 +6,13 @@ import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import AuthenticationFields from "../AuthenticationFields";
 import useToastListener from "../../toaster/ToastListenerHook";
 import useUserInfo from "../../hooks/useUserInfo";
-import { LoginPresenter, LoginView } from "../../../presenters/LoginPresenter"
+import { LoginPresenter, LoginView } from "../../../presenters/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
 }
 
-const Login = (props: Props) => {
+const Login: React.FC<Props> = ({ originalUrl }) => {
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -23,10 +23,9 @@ const Login = (props: Props) => {
   const { displayErrorMessage } = useToastListener();
 
   const loginView: LoginView = {
-    displayErrorMessage: (message: string) => displayErrorMessage(message),
-    updateUserInfo: (user, displayedUser, authToken, remember) => {
-      updateUserInfo(user, displayedUser, authToken, remember);
-    },
+    displayErrorMessage: displayErrorMessage,
+    updateUserInfo: (user, displayedUser, authToken, remember) =>
+      updateUserInfo(user, displayedUser, authToken, remember),
     navigate: (path: string) => navigate(path),
   };
 
@@ -44,7 +43,7 @@ const Login = (props: Props) => {
 
   const doLogin = async () => {
     setIsLoading(true);
-    await presenter.doLogin(alias, password, rememberMe, props.originalUrl);
+    await presenter.doLogin(alias, password, rememberMe, originalUrl);
     setIsLoading(false);
   };
 

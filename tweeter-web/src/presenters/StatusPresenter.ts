@@ -1,35 +1,24 @@
-import { StatusService } from "../model/service/StatusService";
+import { BasePagingPresenter, PagingView } from "./BasePagingPresenter";
 import { AuthToken, Status, User } from "tweeter-shared";
+import { StatusService } from "../model/service/StatusService";
 
-export interface StatusView {
-    addStatuses: (statuses: Status[]) => void;
-    setHasMoreStatuses: (hasMore: boolean) => void;
-    displayErrorMessage: (message: string) => void;
-}
+export interface StatusView extends PagingView<Status> {}
 
-export class StatusPresenter {
-    private service = new StatusService();
-    public lastStatus: Status | null = null;
+export class StatusPresenter extends BasePagingPresenter<Status, StatusView> {
+  loadMoreItems(arg0: AuthToken, arg1: User, PAGE_SIZE: number) {
+    throw new Error("Method not implemented.");
+  }
+  setLastItem(arg0: null) {
+    throw new Error("Method not implemented.");
+  }
+  private service = new StatusService();
 
-    constructor(private view: StatusView) { }
-
-    public async loadMoreStatuses(
-        authToken: AuthToken,
-        user: User,
-        pageSize: number
-    ) {
-        try {
-            const [newStatuses, hasMore] = await this.service.loadMoreStatuses(
-                authToken,
-                user,
-                pageSize,
-                this.lastStatus
-            );
-            this.view.addStatuses(newStatuses);
-            this.view.setHasMoreStatuses(hasMore);
-            this.lastStatus = newStatuses[newStatuses.length - 1];
-        } catch (error) {
-            this.view.displayErrorMessage(`Failed to load statuses: ${error}`);
-        }
-    }
+  protected async loadPage(
+    authToken: AuthToken,
+    user: User,
+    pageSize: number,
+    lastItem: Status | null
+  ): Promise<[Status[], boolean]> {
+    return this.service.loadMoreStatuses(authToken, user, pageSize, lastItem);
+  }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AuthToken, Status, User } from "tweeter-shared";
+import { AuthToken, Status } from "tweeter-shared";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useToastListener from "../toaster/ToastListenerHook";
 import StatusItem from "../statusItem/StatusItem";
@@ -27,8 +27,8 @@ const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ errorMessage })
   const { navigateToUser } = useUserNavigation();
 
   const statusView: StatusView = {
-    addStatuses: (newStatuses: Status[]) => setStatuses((prev) => [...prev, ...newStatuses]),
-    setHasMoreStatuses: (flag: boolean) => setHasMore(flag),
+    addItems: (newStatuses: Status[]) => setStatuses((prev) => [...prev, ...newStatuses]),
+    setHasMoreItems: (flag: boolean) => setHasMore(flag),
     displayErrorMessage: (msg: string) => displayErrorMessage(msg),
   };
 
@@ -37,14 +37,14 @@ const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ errorMessage })
   useEffect(() => {
     // Reset when the displayed user changes.
     setStatuses([]);
-    presenter.lastStatus = null;
+    presenter.setLastItem(null);
     loadMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayedUser]);
 
   const loadMore = async () => {
     try {
-      await presenter.loadMoreStatuses(authToken!, displayedUser!, PAGE_SIZE);
+      await presenter.loadMoreItems(authToken!, displayedUser!, PAGE_SIZE);
     } catch (error) {
       displayErrorMessage(`${errorMessage}: ${error}`);
     }

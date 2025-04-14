@@ -1,35 +1,19 @@
-import { FollowService } from "../model/service/FollowService";
+import { BasePagingPresenter, PagingView } from "./BasePagingPresenter";
 import { AuthToken, User } from "tweeter-shared";
+import { FollowService } from "../model/service/FollowService";
 
-export interface UserItemView {
-    addItems: (items: User[]) => void;
-    setHasMoreItems: (hasMore: boolean) => void;
-    displayErrorMessage: (message: string) => void;
-}
+export interface UserItemView extends PagingView<User> {}
 
-export class UserItemPresenter {
-    private service = new FollowService();
-    private lastItem: User | null = null;
+export class UserItemPresenter extends BasePagingPresenter<User, UserItemView> {
+  private service = new FollowService();
 
-    constructor(private view: UserItemView) { }
-
-    public async loadMoreItems(
-        authToken: AuthToken,
-        user: User,
-        pageSize: number
-    ) {
-        try {
-            const [newItems, hasMore] = await this.service.loadMoreFollowers(
-                authToken,
-                user,
-                pageSize,
-                this.lastItem
-            );
-            this.view.addItems(newItems);
-            this.view.setHasMoreItems(hasMore);
-            this.lastItem = newItems[newItems.length - 1];
-        } catch (error) {
-            this.view.displayErrorMessage(`Failed to load user items: ${error}`);
-        }
-    }
+  protected async loadPage(
+    authToken: AuthToken,
+    user: User,
+    pageSize: number,
+    lastItem: User | null
+  ): Promise<[User[], boolean]> {
+    // For example, load followers. Adjust as needed.
+    return this.service.loadMoreFollowers(authToken, user, pageSize, lastItem);
+  }
 }

@@ -1,8 +1,9 @@
 import { AuthService } from "../model/service/AuthService";
 import { AuthToken, User } from "tweeter-shared";
+import { executeWithErrorHandling } from "./presenterHelpers";
+import { BaseView } from "./BaseView";
 
-export interface RegisterView {
-    displayErrorMessage: (message: string) => void;
+export interface RegisterView extends BaseView {
     updateUserInfo: (
         user: User,
         displayedUser: User | null,
@@ -13,12 +14,9 @@ export interface RegisterView {
 }
 
 export class RegisterPresenter {
-    private view: RegisterView;
     private service = new AuthService();
 
-    constructor(view: RegisterView) {
-        this.view = view;
-    }
+    constructor(private view: RegisterView) { }
 
     public async doRegister(
         firstName: string,
@@ -29,20 +27,20 @@ export class RegisterPresenter {
         imageFileExtension: string,
         rememberMe: boolean
     ) {
-        try {
-            const [user, authToken] = await this.service.register(
-                firstName,
-                lastName,
-                alias,
-                password,
-                userImageBytes
-            );
-            this.view.updateUserInfo(user, user, authToken, rememberMe);
-            this.view.navigate("/");
-        } catch (error) {
-            this.view.displayErrorMessage(
-                `Failed to register user because of exception: ${error}`
-            );
-        }
+        await executeWithErrorHandling(
+            async () => {
+                const [user, authToken] = await this.service.register(
+                    firstName,
+                    lastName,
+                    alias,
+                    password,
+                    userImageBytes
+                );
+                this.view.updateUserInfo(user, user, authToken, rememberMe);
+                this.view.navigate("/");
+            },
+            "Failed to register user because of exception",
+            this.view.displayErrorMessage
+        );
     }
 }

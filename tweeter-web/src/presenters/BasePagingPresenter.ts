@@ -1,4 +1,3 @@
-// presenters/BasePagingPresenter.ts
 import { AuthToken, User } from "tweeter-shared";
 import { BaseView } from "./BaseView";
 

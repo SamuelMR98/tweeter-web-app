@@ -3,13 +3,13 @@ import "bootstrap/dist/css/bootstrap.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
-import useToastListener from "../../toaster/ToastListenerHook";
 import AuthenticationFields from "../AuthenticationFields";
+import useToastListener from "../../toaster/ToastListenerHook";
 import useUserInfo from "../../hooks/useUserInfo";
 import { Buffer } from "buffer";
 import { RegisterPresenter, RegisterView } from "../../../presenters/RegisterPresenter";
 
-const Register = () => {
+const Register: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [alias, setAlias] = useState("");
@@ -23,6 +23,15 @@ const Register = () => {
   const navigate = useNavigate();
   const { updateUserInfo } = useUserInfo();
   const { displayErrorMessage } = useToastListener();
+
+  const registerView: RegisterView = {
+    displayErrorMessage: displayErrorMessage,
+    updateUserInfo: (user, displayedUser, authToken, remember) =>
+      updateUserInfo(user, displayedUser, authToken, remember),
+    navigate: (path: string) => navigate(path),
+  };
+
+  const presenter = new RegisterPresenter(registerView);
 
   const checkSubmitButtonStatus = (): boolean => {
     return (
@@ -51,9 +60,9 @@ const Register = () => {
       setImageUrl(URL.createObjectURL(file));
       const reader = new FileReader();
       reader.onload = (event: ProgressEvent<FileReader>) => {
-        const imageStringBase64 = event.target?.result as string;
-        const imageStringBase64BufferContents = imageStringBase64.split("base64,")[1];
-        const bytes: Uint8Array = Buffer.from(imageStringBase64BufferContents, "base64");
+        const result = event.target?.result as string;
+        const base64Data = result.split("base64,")[1];
+        const bytes = Buffer.from(base64Data, "base64");
         setImageBytes(bytes);
       };
       reader.readAsDataURL(file);
@@ -66,16 +75,6 @@ const Register = () => {
       setImageBytes(new Uint8Array());
     }
   };
-
-  const registerView: RegisterView = {
-    displayErrorMessage: (message: string) => displayErrorMessage(message),
-    updateUserInfo: (user, displayedUser, authToken, remember) => {
-      updateUserInfo(user, displayedUser, authToken, remember);
-    },
-    navigate: (path: string) => navigate(path),
-  };
-
-  const presenter = new RegisterPresenter(registerView);
 
   const doRegister = async () => {
     setIsLoading(true);
@@ -97,7 +96,6 @@ const Register = () => {
         <input
           type="text"
           className="form-control"
-          size={50}
           placeholder="First Name"
           onKeyDown={registerOnEnter}
           onChange={(event) => setFirstName(event.target.value)}
@@ -108,7 +106,6 @@ const Register = () => {
         <input
           type="text"
           className="form-control"
-          size={50}
           placeholder="Last Name"
           onKeyDown={registerOnEnter}
           onChange={(event) => setLastName(event.target.value)}
