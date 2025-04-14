@@ -1,7 +1,7 @@
 import { AuthService } from "../model/service/AuthService";
 import { AuthToken, User } from "tweeter-shared";
 
-export interface LoginView {
+export interface RegisterView {
     displayErrorMessage: (message: string) => void;
     updateUserInfo: (
         user: User,
@@ -12,27 +12,36 @@ export interface LoginView {
     navigate: (path: string) => void;
 }
 
-export class LoginPresenter {
-    private view: LoginView;
+export class RegisterPresenter {
+    private view: RegisterView;
     private service = new AuthService();
 
-    constructor(view: LoginView) {
+    constructor(view: RegisterView) {
         this.view = view;
     }
 
-    public async doLogin(
+    public async doRegister(
+        firstName: string,
+        lastName: string,
         alias: string,
         password: string,
-        rememberMe: boolean,
-        originalUrl?: string
+        userImageBytes: Uint8Array,
+        imageFileExtension: string,
+        rememberMe: boolean
     ) {
         try {
-            const [user, authToken] = await this.service.login(alias, password);
+            const [user, authToken] = await this.service.register(
+                firstName,
+                lastName,
+                alias,
+                password,
+                userImageBytes
+            );
             this.view.updateUserInfo(user, user, authToken, rememberMe);
-            this.view.navigate(originalUrl || "/");
+            this.view.navigate("/");
         } catch (error) {
             this.view.displayErrorMessage(
-                `Failed to log user in because of exception: ${error}`
+                `Failed to register user because of exception: ${error}`
             );
         }
     }

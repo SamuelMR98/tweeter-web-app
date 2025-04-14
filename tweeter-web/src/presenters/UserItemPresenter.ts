@@ -1,4 +1,3 @@
-// UserItemPresenter.ts
 import { FollowService } from "../model/service/FollowService";
 import { AuthToken, User } from "tweeter-shared";
 
@@ -30,9 +29,7 @@ export class UserItemPresenter {
             this.view.setHasMoreItems(hasMore);
             this.lastItem = newItems[newItems.length - 1];
         } catch (error) {
-            this.view.displayErrorMessage(
-                `Failed to load user items: ${error}`
-            );
+            this.view.displayErrorMessage(`Failed to load user items: ${error}`);
         }
     }
 }
