@@ -1,93 +1,69 @@
-import React, { useContext, useState, useEffect } from "react";
-import { UserInfoContext } from "../userInfo/UserInfoProvider";
-import { AuthToken, FakeData, Status, User } from "tweeter-shared";
+import React, { useState, useEffect } from "react";
+import { AuthToken, Status, User } from "tweeter-shared";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useToastListener from "../toaster/ToastListenerHook";
 import StatusItem from "../statusItem/StatusItem";
-import useUserNavigation from "../hooks/userNavigationHook";
 import useUserInfo from "../hooks/useUserInfo";
+import { StatusPresenter, StatusView } from "../../presenters/StatusPresenter";
+import useUserNavigation from "../hooks/userNavigationHook";
 
 export const PAGE_SIZE = 10;
 
 interface StatusItemScrollerProps {
-    loadMoreItemsFunction: (
-        authToken: AuthToken,
-        userAlias: string,
-        pageSize: number,
-        lastItem: Status | null
-    ) => Promise<[Status[], boolean]>;
-    errorMessage: string;
+  loadMoreItemsFunction: (
+    authToken: AuthToken,
+    userAlias: string,
+    pageSize: number,
+    lastItem: Status | null
+  ) => Promise<[Status[], boolean]>;
+  errorMessage: string;
 }
 
-const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ loadMoreItemsFunction, errorMessage }) => {
-    const { displayErrorMessage } = useToastListener();
-    const [items, setItems] = useState<Status[]>([]);
-    const [newItems, setNewItems] = useState<Status[]>([]);
-    const [hasMoreItems, setHasMoreItems] = useState(true);
-    const [lastItem, setLastItem] = useState<Status | null>(null);
-    const [changedDisplayedUser, setChangedDisplayedUser] = useState(true);
+const StatusItemScroller: React.FC<StatusItemScrollerProps> = ({ errorMessage }) => {
+  const { displayErrorMessage } = useToastListener();
+  const [statuses, setStatuses] = useState<Status[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const { displayedUser, authToken } = useUserInfo();
+  const { navigateToUser } = useUserNavigation();
 
-    const { navigateToUser } = useUserNavigation();
-    const { displayedUser, authToken } = useUserInfo();
+  const statusView: StatusView = {
+    addStatuses: (newStatuses: Status[]) => setStatuses((prev) => [...prev, ...newStatuses]),
+    setHasMoreStatuses: (flag: boolean) => setHasMore(flag),
+    displayErrorMessage: (msg: string) => displayErrorMessage(msg),
+  };
 
-    useEffect(() => {
-        reset();
-    }, [displayedUser]);
+  const presenter = new StatusPresenter(statusView);
 
-    useEffect(() => {
-        if (changedDisplayedUser) {
-            loadMoreItems();
-        }
-    }, [changedDisplayedUser]);
+  useEffect(() => {
+    // Reset when the displayed user changes.
+    setStatuses([]);
+    presenter.lastStatus = null;
+    loadMore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayedUser]);
 
-    useEffect(() => {
-        if (newItems) {
-            setItems([...items, ...newItems]);
-        }
-    }, [newItems]);
+  const loadMore = async () => {
+    try {
+      await presenter.loadMoreStatuses(authToken!, displayedUser!, PAGE_SIZE);
+    } catch (error) {
+      displayErrorMessage(`${errorMessage}: ${error}`);
+    }
+  };
 
-    const reset = async () => {
-        setItems([]);
-        setNewItems([]);
-        setLastItem(null);
-        setHasMoreItems(true);
-        setChangedDisplayedUser(true);
-    };
-
-    const loadMoreItems = async () => {
-        try {
-            const [newItems, hasMore] = await loadMoreItemsFunction(
-                authToken!,
-                displayedUser!.alias,
-                PAGE_SIZE,
-                lastItem
-            );
-
-            setHasMoreItems(hasMore);
-            setLastItem(newItems[newItems.length - 1]);
-            setNewItems(newItems);
-            setChangedDisplayedUser(false);
-        } catch (error) {
-            displayErrorMessage(`${errorMessage}: ${error}`);
-        }
-    };
-
-
-    return (
-        <div className="container px-0 overflow-visible vh-100">
-            <InfiniteScroll
-                className="pr-0 mr-0"
-                dataLength={items.length}
-                next={loadMoreItems}
-                hasMore={hasMoreItems}
-                loader={<h4>Loading...</h4>}
-            >
-                {items.map((item, index) => (
-                    <StatusItem key={index} item={item} navigateToUser={navigateToUser} />
-                ))}
-            </InfiniteScroll>
-        </div>
-    );
+  return (
+    <div className="container px-0 overflow-visible vh-100">
+      <InfiniteScroll
+        dataLength={statuses.length}
+        next={loadMore}
+        hasMore={hasMore}
+        loader={<h4>Loading...</h4>}
+      >
+        {statuses.map((status, index) => (
+          <StatusItem key={index} item={status} navigateToUser={navigateToUser} />
+        ))}
+      </InfiniteScroll>
+    </div>
+  );
 };
 
 export default StatusItemScroller;
